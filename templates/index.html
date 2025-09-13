@@ -1,0 +1,1036 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Expense Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #764ba2;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .processing {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+            display: none;
+        }
+
+        .expense-item {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .expense-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .expense-amount {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .expense-category {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .expense-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .recent-expenses {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        .category-breakdown {
+            margin-top: 20px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .profile-section, .recipe-section, .savings-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .recipe-item {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #28a745;
+        }
+
+        .recipe-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .recipe-ingredients {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .recipe-instructions {
+            color: #333;
+            font-style: italic;
+        }
+
+        .grocery-item {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .confidence-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            float: right;
+        }
+
+        .nav-buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .price-comparison-item {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .price-comparison-item.high-savings {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .price-comparison-item.moderate-savings {
+            background: #cce5ff;
+            border-left-color: #007bff;
+        }
+
+        .savings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .savings-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .savings-percentage {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+
+        .price-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .current-price {
+            text-decoration: line-through;
+            color: #dc3545;
+        }
+
+        .better-price {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .suggestion-card {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .suggestion-card.high-impact {
+            border-left-color: #ff5722;
+            background: linear-gradient(135deg, #ffebee, #fce4ec);
+        }
+
+        .suggestion-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-description {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .suggestion-item {
+            background: rgba(0,0,0,0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+        }
+
+        .savings-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .savings-stat {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+        }
+
+        .savings-stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .savings-stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧾 AI Expense Scanner</h1>
+            <p>Upload receipt photos and let AI categorize your expenses automatically</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('upload')">📸 Upload</button>
+            <button class="nav-btn" onclick="showSection('profile')">👤 Profile</button>
+            <button class="nav-btn" onclick="showSection('savings')">💰 Price Comparison</button>
+        </div>
+
+        <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="main-content">
+            <!-- User Profile Section -->
+            <div class="profile-section" style="display: none;" id="profileSection">
+                <h2>👤 Your Profile</h2>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label>Diet Type:</label>
+                        <select id="dietType" name="diet_type">
+                            <option value="">No specific diet</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="keto">Keto</option>
+                            <option value="paleo">Paleo</option>
+                            <option value="mediterranean">Mediterranean</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Allergies:</label>
+                        <input type="text" id="allergies" name="allergies" placeholder="e.g., nuts, dairy, gluten">
+                    </div>
+                    <div class="form-group">
+                        <label>Cooking Skill:</label>
+                        <select id="cookingSkill" name="cooking_skill">
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="upload-btn">Save Profile</button>
+                </form>
+            </div>
+
+            <div class="upload-section">
+                <h2>📸 Upload Receipt</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag & drop your receipt image here</p>
+                    <p>or</p>
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        Choose File
+                    </button>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                </div>
+                
+                <div class="processing" id="processing">
+                    <div class="spinner"></div>
+                    <p>Processing receipt with AI...</p>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h2>📊 Your Stats</h2>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalAmount">$0.00</div>
+                    <div class="stat-label">Total Expenses</div>
+                </div>
+                <div class="category-breakdown" id="categoryBreakdown">
+                    <h3>Top Categories</h3>
+                    <p>Upload receipts to see your spending patterns</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <h2>✨ Latest Scan Result</h2>
+            <div id="latestExpense"></div>
+        </div>
+
+
+        <!-- Price Comparison & Savings Section -->
+        <div class="savings-section" id="savingsSection" style="display: none;">
+            <h2>💰 Price Comparisons & Savings</h2>
+            <p>Find better deals and save money on your groceries:</p>
+            
+            <div id="savingsOverview"></div>
+            <div id="priceComparisonsList"></div>
+            <div id="shoppingSuggestions"></div>
+            <div id="priceInsights"></div>
+            
+            <button class="upload-btn" onclick="addSampleData()" style="margin-top: 20px;">
+                📊 Add Sample Price Data (Demo)
+            </button>
+        </div>
+
+        <div class="recent-expenses">
+            <h2>📋 Recent Expenses</h2>
+            <div id="recentExpenses">
+                <p>No expenses recorded yet. Upload your first receipt!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const processing = document.getElementById('processing');
+        const resultsSection = document.getElementById('resultsSection');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                uploadFile(e.target.files[0]);
+            }
+        });
+
+        function showMessage(message, isError = false) {
+            const successEl = document.getElementById('successMessage');
+            const errorEl = document.getElementById('errorMessage');
+            
+            if (isError) {
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                successEl.style.display = 'none';
+            } else {
+                successEl.textContent = message;
+                successEl.style.display = 'block';
+                errorEl.style.display = 'none';
+            }
+            
+            setTimeout(() => {
+                successEl.style.display = 'none';
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Get CSRF token
+            try {
+                const tokenResponse = await fetch('/csrf-token');
+                const tokenData = await tokenResponse.json();
+                formData.append('csrf_token', tokenData.csrf_token);
+            } catch (error) {
+                showMessage('Failed to get security token', true);
+                return;
+            }
+
+            uploadArea.style.display = 'none';
+            processing.style.display = 'block';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResult(result);
+                    showMessage('Receipt processed successfully! 🎉');
+                    loadStats();
+                    loadRecentExpenses();
+                } else {
+                    showMessage(result.error || 'Failed to process receipt', true);
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, true);
+            } finally {
+                processing.style.display = 'none';
+                uploadArea.style.display = 'flex';
+            }
+        }
+
+        function displayResult(expense) {
+            const resultHTML = `
+                <div class="expense-item">
+                    <div class="expense-header">
+                        <div class="expense-amount">$${expense.amount.toFixed(2)}</div>
+                        <div class="expense-category">${expense.category}</div>
+                    </div>
+                    <div class="expense-details">
+                        <strong>${expense.merchant}</strong><br>
+                        <small>Confidence: ${Math.round(expense.confidence * 100)}%</small>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('latestExpense').innerHTML = resultHTML;
+            resultsSection.style.display = 'block';
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalAmount').textContent = `$${stats.total.toFixed(2)}`;
+                
+                const breakdown = document.getElementById('categoryBreakdown');
+                if (stats.categories.length > 0) {
+                    let html = '<h3>Top Categories</h3>';
+                    stats.categories.slice(0, 5).forEach(cat => {
+                        html += `
+                            <div class="category-item">
+                                <span>${cat.category}</span>
+                                <span>$${cat.amount.toFixed(2)}</span>
+                            </div>
+                        `;
+                    });
+                    breakdown.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function loadRecentExpenses() {
+            try {
+                const response = await fetch('/expenses');
+                const expenses = await response.json();
+                
+                const container = document.getElementById('recentExpenses');
+                if (expenses.length > 0) {
+                    let html = '';
+                    expenses.slice(0, 10).forEach(expense => {
+                        html += `
+                            <div class="expense-item">
+                                <div class="expense-header">
+                                    <div class="expense-amount">$${expense.amount.toFixed(2)}</div>
+                                    <div class="expense-category">${expense.category}</div>
+                                </div>
+                                <div class="expense-details">
+                                    <strong>${expense.merchant}</strong> • ${expense.date}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p>No expenses recorded yet. Upload your first receipt!</p>';
+                }
+            } catch (error) {
+                console.error('Failed to load expenses:', error);
+            }
+        }
+
+        // Navigation functions
+        function showSection(section) {
+            // Hide all sections
+            document.getElementById('profileSection').style.display = 'none';
+            document.getElementById('savingsSection').style.display = 'none';
+            document.querySelector('.main-content').style.display = section === 'upload' ? 'grid' : 'none';
+            
+            // Show selected section
+            if (section === 'profile') {
+                document.getElementById('profileSection').style.display = 'block';
+                loadUserProfile();
+            } else if (section === 'savings') {
+                document.getElementById('savingsSection').style.display = 'block';
+                loadPriceInsights();
+            }
+            
+            // Update active button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Profile management
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/profile');
+                const profile = await response.json();
+                
+                if (profile.diet_type) document.getElementById('dietType').value = profile.diet_type;
+                if (profile.allergies) document.getElementById('allergies').value = profile.allergies;
+                if (profile.cooking_skill) document.getElementById('cookingSkill').value = profile.cooking_skill;
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+            }
+        }
+
+        // Save profile
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const profileData = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(profileData)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showMessage('Profile saved successfully! 👤');
+                } else {
+                    showMessage('Failed to save profile', true);
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, true);
+            }
+        });
+
+
+        // Update the displayResult function to show price comparisons
+        function displayResult(expense) {
+            const resultHTML = `
+                <div class="expense-item">
+                    <div class="expense-header">
+                        <div class="expense-amount">$${expense.amount.toFixed(2)}</div>
+                        <div class="expense-category">${expense.category}</div>
+                    </div>
+                    <div class="expense-details">
+                        <strong>${expense.merchant}</strong><br>
+                        <small>Confidence: ${Math.round(expense.confidence * 100)}%</small>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('latestExpense').innerHTML = resultHTML;
+            resultsSection.style.display = 'block';
+            
+            // Show price comparisons if it's a grocery expense
+            if (expense.category === 'Groceries') {
+                if (expense.price_comparisons && expense.price_comparisons.length > 0) {
+                    displayPriceComparisons(expense.price_comparisons, expense.shopping_suggestions);
+                }
+            }
+        }
+
+        // Price comparison functions
+        function displayPriceComparisons(comparisons, suggestions) {
+            const priceList = document.getElementById('priceComparisonsList');
+            const suggestionsDiv = document.getElementById('shoppingSuggestions');
+            
+            if (comparisons && comparisons.length > 0) {
+                let comparisonHTML = '<h3>💰 Enhanced Price Analysis:</h3>';
+                
+                // Sort comparisons by savings percentage for better display
+                const sortedComparisons = comparisons.sort((a, b) => b.savings_percentage - a.savings_percentage);
+                
+                sortedComparisons.forEach(comp => {
+                    const savingsClass = getSavingsClass(comp.suggestion_type);
+                    const reliabilityBadge = comp.reliability_score > 80 ? '<span class="reliability-badge">📊 Reliable</span>' : '';
+                    const marketBadge = comp.market_position === 'below_average' ? '<span class="market-badge">📉 Below Market Avg</span>' : '';
+                    
+                    comparisonHTML += `
+                        <div class="price-comparison-item ${savingsClass}">
+                            <div class="savings-header">
+                                <div class="item-info">
+                                    <strong>${comp.item_name}</strong>
+                                    <span class="quantity-info">${comp.quantity} ${comp.unit_type}</span>
+                                </div>
+                                <div class="savings-badges">
+                                    <span class="savings-percentage ${comp.suggestion_type}">${comp.savings_percentage.toFixed(1)}% off</span>
+                                    ${reliabilityBadge}
+                                    ${marketBadge}
+                                </div>
+                            </div>
+                            <div class="price-details">
+                                <div class="price-row">
+                                    <span class="label">You Paid:</span>
+                                    <span class="current-price">$${comp.current_price.toFixed(2)} ($${comp.current_price_per_unit.toFixed(2)}/${comp.unit_type}) at ${comp.current_merchant}</span>
+                                </div>
+                                <div class="price-row">
+                                    <span class="label">Better Price:</span>
+                                    <span class="better-price">$${(comp.best_price_per_unit * comp.quantity).toFixed(2)} ($${comp.best_price_per_unit.toFixed(2)}/${comp.unit_type}) at ${comp.best_merchant}</span>
+                                </div>
+                            </div>
+                            <div class="savings-summary">
+                                <div class="savings-amount">💰 Total Savings: $${comp.savings_amount.toFixed(2)}</div>
+                                <div class="data-points">Based on ${comp.data_points} price point${comp.data_points !== 1 ? 's' : ''}</div>
+                            </div>
+                            <div class="suggestion-enhanced">${comp.suggestion}</div>
+                        </div>
+                    `;
+                });
+                priceList.innerHTML = comparisonHTML;
+            }
+
+            // Enhanced shopping suggestions display
+            if (suggestions && suggestions.length > 0) {
+                let suggestionsHTML = '<h3>🎯 Intelligent Shopping Recommendations:</h3>';
+                suggestions.forEach(suggestion => {
+                    if (typeof suggestion === 'string') {
+                        suggestionsHTML += `<div class="suggestion-card legacy"><p>${suggestion}</p></div>`;
+                    } else {
+                        const cardClass = getCardClass(suggestion.type);
+                        const actionIcon = getActionIcon(suggestion.action);
+                        
+                        suggestionsHTML += `
+                            <div class="suggestion-card ${cardClass}" data-action="${suggestion.action}">
+                                <div class="suggestion-header">
+                                    <div class="suggestion-title">${suggestion.title}</div>
+                                    <div class="action-icon">${actionIcon}</div>
+                                </div>
+                                <div class="suggestion-description">${suggestion.description}</div>
+                                ${suggestion.items && suggestion.items.length > 0 ? `
+                                    <div class="suggestion-items">
+                                        ${suggestion.items.slice(0, 3).map(item => `<div class="suggestion-item">${item}</div>`).join('')}
+                                        ${suggestion.items.length > 3 ? `<div class="more-items">+${suggestion.items.length - 3} more</div>` : ''}
+                                    </div>
+                                ` : ''}
+                                ${suggestion.total_savings ? `<div class="total-savings">Total Potential: $${suggestion.total_savings.toFixed(2)}</div>` : ''}
+                            </div>
+                        `;
+                    }
+                });
+                suggestionsDiv.innerHTML = suggestionsHTML;
+            }
+            
+            // Show the savings section if we have comparisons
+            if (comparisons && comparisons.length > 0) {
+                document.getElementById('savingsSection').style.display = 'block';
+            }
+        }
+
+        // Helper functions for enhanced UI
+        function getSavingsClass(suggestionType) {
+            const classes = {
+                'excellent': 'excellent-savings',
+                'significant': 'high-savings',
+                'moderate': 'moderate-savings',
+                'minor': 'low-savings'
+            };
+            return classes[suggestionType] || 'moderate-savings';
+        }
+
+        function getCardClass(type) {
+            const classes = {
+                'high_impact': 'high-impact',
+                'optimization': 'optimization',
+                'intelligence': 'intelligence',
+                'success': 'success'
+            };
+            return classes[type] || 'standard';
+        }
+
+        function getActionIcon(action) {
+            const icons = {
+                'switch_store': '🏪',
+                'multi_store': '🎯',
+                'consider': '💭',
+                'trust': '⭐',
+                'continue': '✅'
+            };
+            return icons[action] || '💡';
+        }
+
+        // Load price insights and trends
+        async function loadPriceInsights() {
+            try {
+                const response = await fetch('/price-insights');
+                const insights = await response.json();
+                
+                const overviewDiv = document.getElementById('savingsOverview');
+                const insightsDiv = document.getElementById('priceInsights');
+                
+                // Display savings overview
+                let overviewHTML = '<div class="savings-overview">';
+                overviewHTML += `
+                    <div class="savings-stat">
+                        <div class="savings-stat-value">$${insights.monthly_potential_savings.toFixed(2)}</div>
+                        <div class="savings-stat-label">Monthly Potential Savings</div>
+                    </div>
+                    <div class="savings-stat">
+                        <div class="savings-stat-value">${insights.top_savings_opportunities.length}</div>
+                        <div class="savings-stat-label">Items with Better Prices</div>
+                    </div>
+                    <div class="savings-stat">
+                        <div class="savings-stat-value">${insights.best_merchants_for_deals.length}</div>
+                        <div class="savings-stat-label">Stores with Good Deals</div>
+                    </div>
+                </div>`;
+                overviewDiv.innerHTML = overviewHTML;
+                
+                // Display detailed insights
+                let insightsHTML = '<h3>📈 Your Price Insights:</h3>';
+                
+                if (insights.top_savings_opportunities.length > 0) {
+                    insightsHTML += '<h4>🔥 Top Savings Opportunities:</h4>';
+                    insights.top_savings_opportunities.forEach(item => {
+                        insightsHTML += `
+                            <div class="suggestion-card">
+                                <div class="suggestion-title">${item.item_name}</div>
+                                <div class="suggestion-description">
+                                    Average savings: $${item.avg_savings.toFixed(2)} per purchase at ${item.recommended_merchant}
+                                    <br><small>Found in ${item.frequency} recent comparisons</small>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                if (insights.best_merchants_for_deals.length > 0) {
+                    insightsHTML += '<h4>🏪 Best Stores for Deals:</h4>';
+                    insights.best_merchants_for_deals.forEach(merchant => {
+                        insightsHTML += `
+                            <div class="suggestion-card">
+                                <div class="suggestion-title">${merchant.merchant}</div>
+                                <div class="suggestion-description">
+                                    ${merchant.deal_count} good deals found • Average ${merchant.avg_savings_percentage.toFixed(1)}% savings
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                if (insights.top_savings_opportunities.length === 0 && insights.best_merchants_for_deals.length === 0) {
+                    insightsHTML += '<p>Upload more grocery receipts to see price insights and savings opportunities! 🛒</p>';
+                }
+                
+                insightsDiv.innerHTML = insightsHTML;
+                
+            } catch (error) {
+                console.error('Failed to load price insights:', error);
+                document.getElementById('priceInsights').innerHTML = '<p>Unable to load price insights. Try uploading some grocery receipts first!</p>';
+            }
+        }
+
+        // Add sample price data for demonstration
+        async function addSampleData() {
+            try {
+                const response = await fetch('/add-sample-price-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showMessage('Sample price data added! 📊 Try uploading a grocery receipt now.');
+                    loadPriceInsights(); // Refresh insights
+                } else {
+                    showMessage('Failed to add sample data', true);
+                }
+            } catch (error) {
+                showMessage('Network error: ' + error.message, true);
+            }
+        }
+
+        // Load initial data
+        loadStats();
+        loadRecentExpenses();
+        loadUserProfile();
+    </script>
+</body>
+</html>

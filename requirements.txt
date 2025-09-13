@@ -1,0 +1,33 @@
+# AI Expense Scanner - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core Flask Framework
+Flask==3.1.2
+Flask-WTF==1.2.2
+
+# Image Processing & OCR
+Pillow==11.3.0
+requests==2.32.5
+
+# Configuration Management
+python-dotenv==1.1.1
+
+# Optional OCR Enhancement (requires system Tesseract installation)
+# Uncomment the line below if you want to use local Tesseract OCR
+# pytesseract>=0.3.10
+
+# Built-in Python modules used (no installation required):
+# - sqlite3 (database operations)
+# - base64 (image encoding)
+# - json (data serialization) 
+# - datetime (timestamp handling)
+# - re (pattern matching)
+# - os (file operations)
+# - mimetypes (file type detection)
+# - io (stream operations)
+
+# Development & Testing Dependencies (optional)
+# Uncomment if you plan to extend or debug the application
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0
