@@ -2,14 +2,14 @@
 
 import sys
 import re
-sys.path.append('/Users/selamberhane/Projects/ai-expense-scanner')
+sys.path.append('path/ai-expense-scanner')
 
 from expense_scanner_python import extract_text_from_image
 
 def analyze_receipt_format():
     """Analyze the actual receipt format to understand price patterns"""
     
-    image_path = '/Users/selamberhane/Downloads/IMG20250826171827.jpg'
+    image_path = 'path.jpg'
     raw_text = extract_text_from_image(image_path)
     
     print("🧪 Analyzing receipt format for price patterns...\n")
